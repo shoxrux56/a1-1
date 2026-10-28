@@ -142,8 +142,6 @@ var QB=[
 ];
 var S,app=document.getElementById('app');
 var OWL='<svg viewBox="0 0 100 100" aria-hidden="true"><g fill="#d9a05b"><path d="M16 58Q8 62 10 78" stroke="#c98b45" stroke-width="5" stroke-linecap="round" fill="none"/><rect x="24" y="70" width="9" height="24" rx="4.5"/><rect x="38" y="72" width="9" height="22" rx="4.5"/><rect x="56" y="72" width="9" height="22" rx="4.5"/><rect x="70" y="70" width="9" height="24" rx="4.5"/><ellipse cx="37" cy="38" rx="11" ry="15" fill="#c98b45"/><ellipse cx="60" cy="38" rx="11" ry="15" fill="#c98b45"/><ellipse cx="49" cy="62" rx="32" ry="19"/><path d="M66 58Q80 54 76 30L90 30Q92 58 82 72Z"/><ellipse cx="85" cy="26" rx="12" ry="9"/></g><ellipse cx="49" cy="64" rx="15" ry="9" fill="#1cb0f6"/><ellipse cx="49" cy="64" rx="8" ry="4" fill="#ffc800"/><ellipse cx="78" cy="15" rx="3" ry="5" fill="#c98b45"/><circle cx="83" cy="23" r="3.5" fill="#3c3c3c"/><circle cx="84" cy="22" r="1.2" fill="#fff"/><circle cx="90" cy="30" r="3" fill="#ff8a8a" opacity=".7"/><path d="M92 25q2 1 2 4" stroke="#8a5a28" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>';
-function snd(ok){try{var c=new (window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator(),g=c.createGain(),t=c.currentTime;o.connect(g);g.connect(c.destination);o.type=ok?'triangle':'sawtooth';o.frequency.setValueAtTime(ok?660:170,t);if(ok)o.frequency.setValueAtTime(880,t+.1);g.gain.setValueAtTime(.15,t);g.gain.exponentialRampToValueAtTime(.001,t+.3);o.start();o.stop(t+.3)}catch(e){}}
-function say(t){try{var u=new SpeechSynthesisUtterance(t);u.lang='ru-RU';u.rate=.85;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}}
 function sh(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
 function sb(t){return '<button class="say" data-say="'+t+'" aria-label="Eshitish">🔊</button>'}
 var IB=[
@@ -290,9 +288,8 @@ function homeOld(){
  app.innerHTML='<div class="top"><b class="fl">🔥 1</b><span style="flex:1"></span><b class="hp">❤️ 5</b></div><main><div class="hero"><b>1-bo’lim, 1-dars</b><br>В, НА, ЗА: qayerda? qayerga?</div><div class="path"><div class="owlrow">'+OWL+'<div class="bub">Boshlaymizmi?</div></div><button class="node" id="n1" aria-label="Darsni boshlash">⭐</button><button class="node lock" disabled aria-label="Yopiq">🔒</button><button class="node lock" disabled aria-label="Yopiq">🔒</button></div></main><footer><button class="btn" id="go">Boshlash</button></footer>';
  document.getElementById('n1').onclick=document.getElementById('go').onclick=function(){intro(0)};
 }
-home();
- /* ===== OVOZ TIZIMI ===== */
-var SOUND=true,AC=null,AU=null,VOICES=[];
+/* ===== OVOZ TIZIMI ===== */
+var SOUND=false,AC=null,AU=null,VOICES=[];
 var SIL='data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
 
 function ctx(){
@@ -319,6 +316,7 @@ function snd(ok){
 function loadV(){try{VOICES=speechSynthesis.getVoices()}catch(e){}}
 if('speechSynthesis' in window){loadV();speechSynthesis.onvoiceschanged=loadV}
 
+/* Zaxira: Google ovozi (telefonda rus ovozi yo'q bo'lsa) */
 function web(t){
   try{
     speechSynthesis.cancel();
@@ -349,12 +347,19 @@ function unlock(){
   try{var u=new SpeechSynthesisUtterance(' ');u.volume=0;speechSynthesis.speak(u)}catch(e){}
 }
 
-/* Birinchi bosishda ovoz tizimi ochiladi */
-function firstTap(){
-  unlock();
-  document.removeEventListener('click',firstTap,true);
+/* ===== Birinchi ekran: Boshlaymizmi? ===== */
+function splash(){
+  app.innerHTML='<main class="fin" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100%;padding-top:0">'+
+  '<div class="owlrow" style="justify-content:center;margin-bottom:28px">'+OWL+'</div>'+
+  '<button class="btn" id="st" style="max-width:320px">Boshlash</button></main>';
+  document.getElementById('st').onclick=function(){
+    SOUND=true;
+    unlock();
+    setTimeout(function(){say('Привет!')},150);
+    home();
+  };
 }
-document.addEventListener('click',firstTap,true);
+splash();
 </script>
 </body>
 </html>
