@@ -291,6 +291,70 @@ function homeOld(){
  document.getElementById('n1').onclick=document.getElementById('go').onclick=function(){intro(0)};
 }
 home();
+ /* ===== OVOZ TIZIMI ===== */
+var SOUND=true,AC=null,AU=null,VOICES=[];
+var SIL='data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
+
+function ctx(){
+  if(!AC){var C=window.AudioContext||window.webkitAudioContext;if(C)AC=new C()}
+  if(AC&&AC.state==='suspended')AC.resume();
+  return AC;
+}
+
+function snd(ok){
+  if(!SOUND)return;
+  try{
+    var c=ctx();if(!c)return;
+    var o=c.createOscillator(),g=c.createGain(),t=c.currentTime;
+    o.connect(g);g.connect(c.destination);
+    o.type=ok?'triangle':'sawtooth';
+    o.frequency.setValueAtTime(ok?660:170,t);
+    if(ok)o.frequency.setValueAtTime(880,t+.1);
+    g.gain.setValueAtTime(.15,t);
+    g.gain.exponentialRampToValueAtTime(.001,t+.3);
+    o.start(t);o.stop(t+.3);
+  }catch(e){}
+}
+
+function loadV(){try{VOICES=speechSynthesis.getVoices()}catch(e){}}
+if('speechSynthesis' in window){loadV();speechSynthesis.onvoiceschanged=loadV}
+
+function web(t){
+  try{
+    speechSynthesis.cancel();
+    if(!AU)AU=new Audio();
+    AU.src='https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=ru&q='+encodeURIComponent(t);
+    AU.play().catch(function(){});
+  }catch(e){}
+}
+
+function say(t){
+  if(!SOUND)return;
+  var hasRu=VOICES.some(function(x){return /^ru/i.test(x.lang)});
+  if(!hasRu||!('speechSynthesis' in window))return web(t);
+  var u=new SpeechSynthesisUtterance(t),started=false;
+  u.lang='ru-RU';u.rate=.85;
+  u.voice=VOICES.filter(function(x){return /^ru/i.test(x.lang)})[0];
+  u.onstart=function(){started=true};
+  u.onerror=function(){if(!started)web(t)};
+  window._u=u;
+  speechSynthesis.cancel();
+  setTimeout(function(){speechSynthesis.speak(u)},80);
+  setTimeout(function(){if(!started){speechSynthesis.cancel();web(t)}},1500);
+}
+
+function unlock(){
+  ctx();
+  try{AU=new Audio();AU.src=SIL;AU.play().catch(function(){})}catch(e){}
+  try{var u=new SpeechSynthesisUtterance(' ');u.volume=0;speechSynthesis.speak(u)}catch(e){}
+}
+
+/* Birinchi bosishda ovoz tizimi ochiladi */
+function firstTap(){
+  unlock();
+  document.removeEventListener('click',firstTap,true);
+}
+document.addEventListener('click',firstTap,true);
 </script>
 </body>
 </html>
